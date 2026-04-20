@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockSocial — Trading Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c10;
+    --bg2: #111318;
+    --bg3: #181b22;
+    --bg4: #1f2330;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --accent: #00e5a0;
+    --accent2: #00b87c;
+    --accent-dim: rgba(0,229,160,0.12);
+    --accent-dim2: rgba(0,229,160,0.06);
+    --red: #ff4d6a;
+    --red-dim: rgba(255,77,106,0.12);
+    --amber: #ffb830;
+    --blue: #4da8ff;
+    --blue-dim: rgba(77,168,255,0.12);
+    --text: #e8eaf2;
+    --text2: #8b91a8;
+    --text3: #555b6e;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID NOISE BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 60px;
+    background: rgba(10,12,16,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-logo span {
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+  }
+
+  .nav-tab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: none;
+    background: none;
+    transition: all 0.15s;
+  }
+
+  .nav-tab:hover { background: var(--bg3); color: var(--text); }
+  .nav-tab.active { background: var(--accent-dim); color: var(--accent); }
+
+  .nav-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00e5a0, #4da8ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #000;
+    cursor: pointer;
+  }
+
+  /* LAYOUT */
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* PAGE TITLE */
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+
+  .page-sub {
+    font-size: 14px;
+    color: var(--text2);
+    margin-bottom: 2rem;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 1rem;
+  }
+
+  /* GRID LAYOUTS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  .grid-left-right { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; }
+  .grid-main-side { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+
+  /* STAT CARDS */
+  .stat {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-change {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .positive { color: var(--accent); }
+  .negative { color: var(--red); }
+  .neutral { color: var(--text2); }
+
+  /* BUTTONS */
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border2);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg3);
+    color: var(--text);
+  }
+
+  .btn:hover { border-color: var(--border2); background: var(--bg4); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-weight: 600;
+  }
+
+  .btn-primary:hover { background: var(--accent2); }
+
+  .btn-danger {
+    background: var(--red-dim);
+    color: var(--red);
+    border-color: rgba(255,77,106,0.25);
+  }
+
+  .btn-danger:hover { background: rgba(255,77,106,0.2); }
+
+  .btn-buy {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: rgba(0,229,160,0.25);
+    font-weight: 600;
+  }
+
+  .btn-buy:hover { background: rgba(0,229,160,0.2); }
+
+  .btn-sell {
+    background: var(--red-dim);
+    color: var(--red);
+    border-color: rgba(255,77,106,0.25);
+    font-weight: 600;
+  }
+
+  .btn-sell:hover { background: rgba(255,77,106,0.2); }
+
+  .btn-sm { font-size: 12px; padding: 5px 12px; }
+  .btn-full { width: 100%; text-align: center; justify-content: center; }
+
+  /* FORMS */
+  .form-group { margin-bottom: 1rem; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  select option { background: var(--bg3); }
+
+  /* TABLES */
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 0 1rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  tbody tr:hover { background: var(--bg3); }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody td {
+    padding: 0.85rem 1rem;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .mono { font-family: 'DM Mono', monospace; }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .badge-buy { background: var(--accent-dim); color: var(--accent); }
+  .badge-sell { background: var(--red-dim); color: var(--red); }
+  .badge-pending { background: rgba(255,184,48,0.12); color: var(--amber); }
+  .badge-executed { background: var(--blue-dim); color: var(--blue); }
+  .badge-cancelled { background: var(--bg4); color: var(--text3); }
+
+  /* STOCK TICKER ROW */
+  .ticker-bar {
+    display: flex;
+    gap: 2rem;
+    overflow-x: auto;
+    padding: 0.75rem 0;
+    margin-bottom: 1.5rem;
+    scrollbar-width: none;
+  }
+
+  .ticker-bar::-webkit-scrollbar { display: none; }
+
+  .ticker-item {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .ticker-item:hover { border-color: var(--border2); background: var(--bg3); }
+
+  .ticker-sym {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .ticker-price {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .ticker-chg {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* SPARKLINE (pure CSS) */
+  .sparkline {
+    width: 60px;
+    height: 24px;
+    opacity: 0.7;
+  }
+
+  /* PORTFOLIO TABLE */
+  .holding-row td:first-child {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  /* FOLLOW / SOCIAL */
+  .follower-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .follower-card:last-child { border-bottom: none; }
+
+  .follower-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .follower-info { flex: 1; }
+
+  .follower-name {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .follower-stats {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 2rem;
+    width: 420px;
+    max-width: calc(100vw - 2rem);
+    position: relative;
+    animation: slideUp 0.2s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .modal-close:hover { color: var(--text); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 999;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: fadeIn 0.2s ease;
+    max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .toast.success .toast-dot { background: var(--accent); }
+  .toast.error .toast-dot { background: var(--red); }
+
+  .toast-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* CHART AREA */
+  .chart-area {
+    height: 200px;
+    position: relative;
+    margin: 1rem 0;
+  }
+
+  .chart-area canvas { width: 100% !important; height: 100% !important; }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.25rem 0;
+  }
+
+  /* SEARCH BAR */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .search-wrap input { padding-left: 36px; }
+
+  /* PAGINATION / EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text3);
+    font-size: 14px;
+  }
+
+  /* ORDER PANEL TABS */
+  .order-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.25rem;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+  }
+
+  .order-tab {
+    flex: 1;
+    text-align: center;
+    padding: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text2);
+    border: none;
+    background: none;
+  }
+
+  .order-tab.buy.active { background: var(--accent-dim); color: var(--accent); }
+  .order-tab.sell.active { background: var(--red-dim); color: var(--red); }
+
+  /* GAIN/LOSS BAR */
+  .progress-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    overflow: hidden;
+    margin-top: 6px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+
+  /* REPORT SECTION */
+  .report-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .report-card:hover { border-color: var(--border2); }
+
+  .report-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .report-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .report-desc {
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  /* INLINE FLEX */
+  .flex { display: flex; }
+  .flex-center { display: flex; align-items: center; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .mb-1 { margin-bottom: 0.5rem; }
+  .mb-2 { margin-bottom: 1rem; }
+  .mb-3 { margin-bottom: 1.5rem; }
+  .mt-1 { margin-top: 0.5rem; }
+  .mt-2 { margin-top: 1rem; }
+  .text-sm { font-size: 12px; }
+  .text-mono { font-family: 'DM Mono', monospace; }
+  .col-span-2 { grid-column: span 2; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .grid-2, .grid-3, .grid-4, .grid-left-right, .grid-main-side { grid-template-columns: 1fr; }
+    .col-span-2 { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    ◈ StockSocial <span>/ Platform</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('dashboard')">Dashboard</button>
+    <button class="nav-tab" onclick="showSection('market')">Market</button>
+    <button class="nav-tab" onclick="showSection('orders')">Orders</button>
+    <button class="nav-tab" onclick="showSection('portfolio')">Portfolio</button>
+    <button class="nav-tab" onclick="showSection('social')">Social</button>
+    <button class="nav-tab" onclick="showSection('account')">Account</button>
+    <button class="nav-tab" onclick="showSection('reports')">Reports</button>
+  </div>
+  <div class="nav-user">
+    <span style="font-family:'DM Mono',monospace; color: var(--accent);">$24,832.50</span>
+    <div class="avatar" onclick="showSection('account')">JD</div>
+  </div>
+</nav>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- ========== DASHBOARD ========== -->
+  <div id="dashboard" class="section active">
+    <div class="page-title">Welcome back, John.</div>
+    <div class="page-sub">Here's what's happening in your portfolio today.</div>
+
+    <!-- Stats Row -->
+    <div class="grid-4 mb-3">
+      <div class="stat">
+        <div class="stat-label">Portfolio Value</div>
+        <div class="stat-value mono">$24,832.50</div>
+        <div class="stat-change positive">↑ +$342.80 today</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Cash Balance</div>
+        <div class="stat-value mono">$5,210.00</div>
+        <div class="stat-change neutral">Available to trade</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Total P&amp;L</div>
+        <div class="stat-value mono positive">+$3,192.40</div>
+        <div class="stat-change positive">↑ +14.7% all time</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Open Orders</div>
+        <div class="stat-value mono">3</div>
+        <div class="stat-change neutral">2 buy · 1 sell</div>
+      </div>
+    </div>
+
+    <div class="grid-main-side">
+      <!-- Holdings Snapshot -->
+      <div class="card">
+        <div class="flex-between mb-2">
+          <div class="card-title">Holdings</div>
+          <button class="btn btn-sm" onclick="showSection('portfolio')">View All →</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Shares</th>
+                <th>Avg Cost</th>
+                <th>Current</th>
+                <th>P&amp;L</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="holding-row">
+                <td>AAPL</td>
+                <td class="mono">10</td>
+                <td class="mono">$172.50</td>
+                <td class="mono">$189.30</td>
+                <td class="mono positive">+$168.00</td>
+              </tr>
+              <tr class="holding-row">
+                <td>NVDA</td>
+                <td class="mono">5</td>
+                <td class="mono">$410.00</td>
+                <td class="mono">$875.40</td>
+                <td class="mono positive">+$2,327.00</td>
+              </tr>
+              <tr class="holding-row">
+                <td>MSFT</td>
+                <td class="mono">8</td>
+                <td class="mono">$305.20</td>
+                <td class="mono">$375.80</td>
+                <td class="mono positive">+$564.80</td>
+              </tr>
+              <tr class="holding-row">
+                <td>META</td>
+                <td class="mono">4</td>
+                <td class="mono">$490.00</td>
+                <td class="mono">$478.20</td>
+                <td class="mono negative">-$47.20</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Quick Trade -->
+      <div class="card">
+        <div class="card-title">Quick Order</div>
+        <div class="order-tabs">
+          <button class="order-tab buy active" id="qt-buy" onclick="setOrderType('buy')">BUY</button>
+          <button class="order-tab sell" id="qt-sell" onclick="setOrderType('sell')">SELL</button>
+        </div>
+        <div class="form-group">
+          <label>Symbol</label>
+          <input type="text" id="qt-symbol" placeholder="e.g. AAPL" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div class="form-group">
+          <label>Shares</label>
+          <input type="number" id="qt-shares" placeholder="0" min="1">
+        </div>
+        <div class="form-group">
+          <label>Order Type</label>
+          <select id="qt-type">
+            <option value="market">Market Order</option>
+            <option value="limit">Limit Order</option>
+            <option value="stop">Stop Order</option>
+          </select>
+        </div>
+        <div class="form-group" id="qt-price-wrap" style="display:none">
+          <label>Limit Price</label>
+          <input type="number" id="qt-price" placeholder="0.00" step="0.01">
+        </div>
+        <button class="btn btn-primary btn-full mt-2" id="qt-submit-btn" onclick="submitOrder()">Place Buy Order</button>
+      </div>
+    </div>
+
+    <!-- Recent Trades -->
+    <div class="card mt-2">
+      <div class="flex-between mb-2">
+        <div class="card-title">Recent Trades</div>
+        <button class="btn btn-sm" onclick="showSection('orders')">Order History →</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Symbol</th><th>Type</th><th>Shares</th><th>Price</th><th>Total</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Apr 19</td><td class="mono">NVDA</td><td><span class="badge badge-buy">BUY</span></td><td class="mono">2</td><td class="mono">$870.50</td><td class="mono">$1,741.00</td><td><span class="badge badge-executed">Executed</span></td></tr>
+            <tr><td>Apr 18</td><td class="mono">TSLA</td><td><span class="badge badge-sell">SELL</span></td><td class="mono">3</td><td class="mono">$175.20</td><td class="mono">$525.60</td><td><span class="badge badge-executed">Executed</span></td></tr>
+            <tr><td>Apr 17</td><td class="mono">AAPL</td><td><span class="badge badge-buy">BUY</span></td><td class="mono">5</td><td class="mono">$188.90</td><td class="mono">$944.50</td><td><span class="badge badge-executed">Executed</span></td></tr>
+            <tr><td>Apr 16</td><td class="mono">MSFT</td><td><span class="badge badge-buy">BUY</span></td><td class="mono">3</td><td class="mono">$374.00</td><td class="mono">$1,122.00</td><td><span class="badge badge-executed">Executed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MARKET ========== -->
+  <div id="market" class="section">
+    <div class="page-title">Market</div>
+    <div class="page-sub">Browse stocks and place orders.</div>
+
+    <div class="ticker-bar" id="ticker-bar">
+      <!-- Generated by JS -->
+    </div>
+
+    <div class="grid-main-side">
+      <div class="card">
+        <div class="flex-between mb-2">
+          <div class="card-title">All Stocks</div>
+          <div class="search-wrap" style="width:220px;margin-bottom:0">
+            <span class="search-icon">⌕</span>
+            <input type="text" placeholder="Search symbol or name..." oninput="filterStocks(this.value)">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="stocks-table">
+            <thead>
+              <tr><th>Symbol</th><th>Name</th><th>Price</th><th>Change</th><th>Volume</th><th></th></tr>
+            </thead>
+            <tbody id="stocks-body">
+              <!-- Generated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <!-- Stock Detail -->
+        <div class="card mb-2" id="stock-detail-card">
+          <div class="card-title">Stock Detail</div>
+          <div id="stock-detail-content">
+            <div class="empty-state">Select a stock to view details.</div>
+          </div>
+        </div>
+
+        <!-- Place Order -->
+        <div class="card">
+          <div class="card-title">Place Order</div>
+          <div class="order-tabs">
+            <button class="order-tab buy active" id="m-buy" onclick="setMOrderType('buy')">BUY</button>
+            <button class="order-tab sell" id="m-sell" onclick="setMOrderType('sell')">SELL</button>
+          </div>
+          <div class="form-group">
+            <label>Symbol</label>
+            <input type="text" id="m-symbol" placeholder="e.g. AAPL" oninput="this.value=this.value.toUpperCase()">
+          </div>
+          <div class="form-group">
+            <label>Shares</label>
+            <input type="number" id="m-shares" placeholder="0" min="1">
+          </div>
+          <div class="form-group">
+            <label>Order Type</label>
+            <select id="m-order-type" onchange="toggleMLimit()">
+              <option value="market">Market Order</option>
+              <option value="limit">Limit Order</option>
+              <option value="stop">Stop Order</option>
+            </select>
+          </div>
+          <div class="form-group" id="m-limit-wrap" style="display:none">
+            <label>Price</label>
+            <input type="number" id="m-limit-price" placeholder="0.00" step="0.01">
+          </div>
+          <button class="btn btn-buy btn-full mt-2" id="m-submit-btn" onclick="submitMarketOrder()">Place Buy Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ORDERS ========== -->
+  <div id="orders" class="section">
+    <div class="page-title">Orders</div>
+    <div class="page-sub">View and manage your open and historical orders.</div>
+
+    <div class="flex-between mb-2">
+      <div class="flex gap-8">
+        <button class="btn btn-sm" onclick="filterOrders('all')" id="filter-all" style="border-color:var(--border2);color:var(--accent)">All</button>
+        <button class="btn btn-sm" onclick="filterOrders('pending')" id="filter-pending">Pending</button>
+        <button class="btn btn-sm" onclick="filterOrders('executed')" id="filter-executed">Executed</button>
+        <button class="btn btn-sm" onclick="filterOrders('cancelled')" id="filter-cancelled">Cancelled</button>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openOrderModal()">+ New Order</button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Order ID</th><th>Date</th><th>Symbol</th><th>Type</th><th>Shares</th><th>Price</th><th>Total</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody id="orders-body">
+            <!-- Generated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PORTFOLIO ========== -->
+  <div id="portfolio" class="section">
+    <div class="page-title">Portfolio</div>
+    <div class="page-sub">Your current holdings and performance.</div>
+
+    <div class="grid-4 mb-3">
+      <div class="stat">
+        <div class="stat-label">Total Value</div>
+        <div class="stat-value mono">$19,622.50</div>
+        <div class="stat-change positive">↑ +$3,192.40</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Cost Basis</div>
+        <div class="stat-value mono">$16,430.10</div>
+        <div class="stat-change neutral">Invested capital</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Total Return</div>
+        <div class="stat-value mono positive">+19.43%</div>
+        <div class="stat-change positive">Unrealized</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Positions</div>
+        <div class="stat-value mono">7</div>
+        <div class="stat-change neutral">Across sectors</div>
+      </div>
+    </div>
+
+    <div class="grid-left-right">
+      <div class="card">
+        <div class="flex-between mb-2">
+          <div class="card-title">Holdings</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Symbol</th><th>Company</th><th>Shares</th><th>Avg Cost</th><th>Current</th><th>Market Val</th><th>P&amp;L</th><th>%</th></tr>
+            </thead>
+            <tbody id="holdings-body">
+              <!-- Generated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Allocation</div>
+        <div id="allocation-list">
+          <!-- Generated by JS -->
+        </div>
+        <hr class="divider">
+        <div class="card-title mt-2">Transaction History</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Action</th><th>Symbol</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td class="text-sm">Apr 19</td><td><span class="badge badge-buy">BUY</span></td><td class="mono">NVDA</td><td class="mono positive">$1,741.00</td></tr>
+              <tr><td class="text-sm">Apr 18</td><td><span class="badge badge-sell">SELL</span></td><td class="mono">TSLA</td><td class="mono negative">$525.60</td></tr>
+              <tr><td class="text-sm">Apr 17</td><td><span class="badge badge-buy">BUY</span></td><td class="mono">AAPL</td><td class="mono positive">$944.50</td></tr>
+              <tr><td class="text-sm">Apr 16</td><td><span class="badge badge-buy">BUY</span></td><td class="mono">MSFT</td><td class="mono positive">$1,122.00</td></tr>
+              <tr><td class="text-sm">Apr 12</td><td><span class="badge badge-buy">BUY</span></td><td class="mono">GOOGL</td><td class="mono positive">$2,840.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SOCIAL ========== -->
+  <div id="social" class="section">
+    <div class="page-title">Social</div>
+    <div class="page-sub">Follow investors and see their activity.</div>
+
+    <div class="grid-2">
+      <!-- Who to Follow -->
+      <div class="card">
+        <div class="flex-between mb-2">
+          <div class="card-title">Discover Investors</div>
+          <div class="search-wrap" style="width:180px;margin-bottom:0">
+            <span class="search-icon">⌕</span>
+            <input type="text" placeholder="Search users..." oninput="filterUsers(this.value)">
+          </div>
+        </div>
+        <div id="discover-list">
+          <!-- Generated by JS -->
+        </div>
+      </div>
+
+      <!-- Following -->
+      <div>
+        <div class="card mb-2">
+          <div class="card-title">Following (3)</div>
+          <div id="following-list">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Feed — Recent Activity</div>
+          <div id="social-feed">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ACCOUNT ========== -->
+  <div id="account" class="section">
+    <div class="page-title">Account</div>
+    <div class="page-sub">Manage your profile and account settings.</div>
+
+    <div class="grid-left-right">
+      <div>
+        <!-- Profile -->
+        <div class="card mb-2">
+          <div class="card-title">Profile</div>
+          <div class="flex-center gap-12 mb-3">
+            <div class="avatar" style="width:56px;height:56px;font-size:18px">JD</div>
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700">John Doe</div>
+              <div style="font-size:13px;color:var(--text2)">@johndoe · Member since Jan 2024</div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" value="John">
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" value="Doe">
+            </div>
+            <div class="form-group col-span-2">
+              <label>Email</label>
+              <input type="email" value="john.doe@email.com">
+            </div>
+            <div class="form-group col-span-2">
+              <label>Username</label>
+              <input type="text" value="johndoe">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="showToast('Profile updated successfully.','success')">Save Changes</button>
+        </div>
+
+        <!-- Password -->
+        <div class="card">
+          <div class="card-title">Change Password</div>
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" placeholder="••••••••">
+          </div>
+          <button class="btn btn-sm" onclick="showToast('Password changed successfully.','success')">Update Password</button>
+        </div>
+      </div>
+
+      <div>
+        <!-- Account Balance -->
+        <div class="card mb-2">
+          <div class="card-title">Account Balance</div>
+          <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:500;color:var(--accent);margin-bottom:4px">$5,210.00</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:1.5rem">Available cash balance</div>
+          <div class="form-group">
+            <label>Deposit Amount</label>
+            <input type="number" id="deposit-amount" placeholder="0.00" min="1" step="0.01">
+          </div>
+          <div class="flex gap-8">
+            <button class="btn btn-primary btn-sm" onclick="handleDeposit()">Deposit</button>
+            <button class="btn btn-sm btn-danger" onclick="handleWithdraw()">Withdraw</button>
+          </div>
+        </div>
+
+        <!-- Account Stats -->
+        <div class="card mb-2">
+          <div class="card-title">Account Stats</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="stat" style="padding:1rem">
+              <div class="stat-label">Total Trades</div>
+              <div class="stat-value mono" style="font-size:1.2rem">47</div>
+            </div>
+            <div class="stat" style="padding:1rem">
+              <div class="stat-label">Win Rate</div>
+              <div class="stat-value mono positive" style="font-size:1.2rem">68%</div>
+            </div>
+            <div class="stat" style="padding:1rem">
+              <div class="stat-label">Followers</div>
+              <div class="stat-value mono" style="font-size:1.2rem">12</div>
+            </div>
+            <div class="stat" style="padding:1rem">
+              <div class="stat-label">Following</div>
+              <div class="stat-value mono" style="font-size:1.2rem">3</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="card" style="border-color:rgba(255,77,106,0.2)">
+          <div class="card-title" style="color:var(--red)">Danger Zone</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:1rem">These actions are irreversible. Please be certain.</div>
+          <button class="btn btn-danger btn-sm" onclick="showToast('Account deletion request submitted.','error')">Delete Account</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== REPORTS ========== -->
+  <div id="reports" class="section">
+    <div class="page-title">Reports</div>
+    <div class="page-sub">Generate summaries and analytics for your account.</div>
+
+    <div class="grid-3 mb-3">
+      <div class="report-card" onclick="runReport('portfolio')">
+        <div class="report-icon" style="background:var(--accent-dim);color:var(--accent)">◎</div>
+        <div class="report-name">Portfolio Summary</div>
+        <div class="report-desc">Current holdings, values, allocation, and total P&amp;L.</div>
+      </div>
+      <div class="report-card" onclick="runReport('transactions')">
+        <div class="report-icon" style="background:var(--blue-dim);color:var(--blue)">↕</div>
+        <div class="report-name">Transaction History</div>
+        <div class="report-desc">All executed buy and sell orders over time.</div>
+      </div>
+      <div class="report-card" onclick="runReport('mosttrades')">
+        <div class="report-icon" style="background:rgba(255,184,48,0.12);color:var(--amber)">★</div>
+        <div class="report-name">Most-Traded Stocks</div>
+        <div class="report-desc">Stocks ranked by your trading volume and frequency.</div>
+      </div>
+    </div>
+
+    <div class="card" id="report-output" style="display:none">
+      <div class="flex-between mb-2">
+        <div class="card-title" id="report-title">Report</div>
+        <button class="btn btn-sm" onclick="document.getElementById('report-output').style.display='none'">✕ Close</button>
+      </div>
+      <div id="report-content"></div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- MODAL: New Order -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('order-modal')">✕</button>
+    <div class="modal-title">
+      <span id="modal-order-icon" style="color:var(--accent)">◈</span>
+      New Order
+    </div>
+    <div class="order-tabs">
+      <button class="order-tab buy active" id="modal-buy-tab" onclick="setModalType('buy')">BUY</button>
+      <button class="order-tab sell" id="modal-sell-tab" onclick="setModalType('sell')">SELL</button>
+    </div>
+    <div class="form-group">
+      <label>Symbol</label>
+      <input type="text" id="modal-symbol" placeholder="e.g. AAPL" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div class="form-group">
+      <label>Shares</label>
+      <input type="number" id="modal-shares" placeholder="0" min="1">
+    </div>
+    <div class="form-group">
+      <label>Order Type</label>
+      <select id="modal-order-type" onchange="toggleModalLimit()">
+        <option value="market">Market Order</option>
+        <option value="limit">Limit Order</option>
+        <option value="stop">Stop Order</option>
+      </select>
+    </div>
+    <div class="form-group" id="modal-limit-wrap" style="display:none">
+      <label>Limit Price</label>
+      <input type="number" id="modal-limit-price" placeholder="0.00" step="0.01">
+    </div>
+    <button class="btn btn-primary btn-full mt-2" id="modal-submit-btn" onclick="submitModalOrder()">Place Buy Order</button>
+  </div>
+</div>
+
+<script>
+// ============ DATA ============
+const stocks = [
+  { sym: 'AAPL', name: 'Apple Inc.', price: 189.30, chg: +1.42, chgPct: +0.76, vol: '52.3M' },
+  { sym: 'NVDA', name: 'NVIDIA Corp.', price: 875.40, chg: +12.80, chgPct: +1.48, vol: '38.1M' },
+  { sym: 'MSFT', name: 'Microsoft Corp.', price: 375.80, chg: +2.10, chgPct: +0.56, vol: '21.4M' },
+  { sym: 'GOOGL', name: 'Alphabet Inc.', price: 170.20, chg: -1.30, chgPct: -0.76, vol: '18.9M' },
+  { sym: 'AMZN', name: 'Amazon.com Inc.', price: 184.50, chg: +3.20, chgPct: +1.76, vol: '29.7M' },
+  { sym: 'TSLA', name: 'Tesla Inc.', price: 173.80, chg: -4.50, chgPct: -2.52, vol: '91.2M' },
+  { sym: 'META', name: 'Meta Platforms', price: 478.20, chg: -2.80, chgPct: -0.58, vol: '14.6M' },
+  { sym: 'AMD', name: 'Advanced Micro', price: 162.40, chg: +5.60, chgPct: +3.57, vol: '45.8M' },
+  { sym: 'NFLX', name: 'Netflix Inc.', price: 618.90, chg: +9.30, chgPct: +1.53, vol: '8.2M' },
+  { sym: 'DIS', name: 'Walt Disney Co.', price: 101.20, chg: -0.70, chgPct: -0.69, vol: '12.1M' },
+];
+
+const holdings = [
+  { sym: 'AAPL', name: 'Apple Inc.', shares: 10, avgCost: 172.50, current: 189.30 },
+  { sym: 'NVDA', name: 'NVIDIA Corp.', shares: 5, avgCost: 410.00, current: 875.40 },
+  { sym: 'MSFT', name: 'Microsoft Corp.', shares: 8, avgCost: 305.20, current: 375.80 },
+  { sym: 'META', name: 'Meta Platforms', shares: 4, avgCost: 490.00, current: 478.20 },
+  { sym: 'GOOGL', name: 'Alphabet Inc.', shares: 20, avgCost: 142.00, current: 170.20 },
+  { sym: 'AMZN', name: 'Amazon.com Inc.', shares: 6, avgCost: 175.80, current: 184.50 },
+  { sym: 'AMD', name: 'Advanced Micro', shares: 12, avgCost: 148.20, current: 162.40 },
+];
+
+const ordersData = [
+  { id: '#ORD-001', date: 'Apr 19', sym: 'NVDA', type: 'buy', shares: 2, price: 870.50, status: 'executed' },
+  { id: '#ORD-002', date: 'Apr 18', sym: 'TSLA', type: 'sell', shares: 3, price: 175.20, status: 'executed' },
+  { id: '#ORD-003', date: 'Apr 19', sym: 'AAPL', type: 'buy', shares: 5, price: 188.00, status: 'pending' },
+  { id: '#ORD-004', date: 'Apr 19', sym: 'AMZN', type: 'buy', shares: 2, price: 183.00, status: 'pending' },
+  { id: '#ORD-005', date: 'Apr 17', sym: 'AAPL', type: 'buy', shares: 5, price: 188.90, status: 'executed' },
+  { id: '#ORD-006', date: 'Apr 16', sym: 'MSFT', type: 'buy', shares: 3, price: 374.00, status: 'executed' },
+  { id: '#ORD-007', date: 'Apr 15', sym: 'DIS', type: 'sell', shares: 10, price: 104.50, status: 'cancelled' },
+  { id: '#ORD-008', date: 'Apr 14', sym: 'NVDA', type: 'buy', shares: 1, price: 860.00, status: 'executed' },
+];
+
+const investors = [
+  { init: 'SR', name: 'Sarah R.', user: 'sarahrtrades', ret: '+38.2%', trades: 142, color: '#4da8ff', following: true },
+  { init: 'MK', name: 'Mike K.', user: 'mikekinvests', ret: '+24.7%', trades: 98, color: '#00e5a0', following: false },
+  { init: 'AL', name: 'Ana L.', user: 'analuis', ret: '+19.1%', trades: 211, color: '#ff4d6a', following: true },
+  { init: 'TP', name: 'Tom P.', user: 'tomphilips', ret: '+31.5%', trades: 76, color: '#ffb830', following: false },
+  { init: 'JW', name: 'Jane W.', user: 'janewtrader', ret: '+12.4%', trades: 53, color: '#a78bfa', following: true },
+];
+
+const feed = [
+  { user: 'Sarah R.', init: 'SR', color: '#4da8ff', action: 'bought 10 shares of NVDA', time: '2h ago', tag: 'buy' },
+  { user: 'Tom P.', init: 'TP', color: '#ffb830', action: 'sold 5 shares of TSLA', time: '4h ago', tag: 'sell' },
+  { user: 'Ana L.', init: 'AL', color: '#ff4d6a', action: 'bought 15 shares of AAPL', time: '6h ago', tag: 'buy' },
+  { user: 'Sarah R.', init: 'SR', color: '#4da8ff', action: 'sold 3 shares of META', time: '1d ago', tag: 'sell' },
+];
+
+// ============ CURRENT STATE ============
+let currentOrderType = { qt: 'buy', m: 'buy', modal: 'buy' };
+let currentOrderFilter = 'all';
+let currentSection = 'dashboard';
+
+// ============ INIT ============
+window.onload = function() {
+  renderTickerBar();
+  renderStocksTable(stocks);
+  renderOrdersTable(ordersData);
+  renderHoldings();
+  renderAllocation();
+  renderSocial();
+};
+
+// ============ NAV ============
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const tabs = document.querySelectorAll('.nav-tab');
+  const map = ['dashboard','market','orders','portfolio','social','account','reports'];
+  tabs[map.indexOf(id)]?.classList.add('active');
+  currentSection = id;
+}
+
+// ============ TICKER BAR ============
+function renderTickerBar() {
+  const bar = document.getElementById('ticker-bar');
+  bar.innerHTML = stocks.slice(0,8).map(s => `
+    <div class="ticker-item" onclick="selectStock('${s.sym}')">
+      <div>
+        <div class="ticker-sym">${s.sym}</div>
+        <div class="ticker-price">$${s.price.toFixed(2)}</div>
+      </div>
+      <div class="ticker-chg ${s.chg >= 0 ? 'positive' : 'negative'}">${s.chg >= 0 ? '↑' : '↓'} ${Math.abs(s.chgPct).toFixed(2)}%</div>
+    </div>
+  `).join('');
+}
+
+// ============ STOCKS TABLE ============
+function renderStocksTable(data) {
+  document.getElementById('stocks-body').innerHTML = data.map(s => `
+    <tr>
+      <td style="font-family:'Syne',sans-serif;font-weight:700">${s.sym}</td>
+      <td style="color:var(--text2)">${s.name}</td>
+      <td class="mono">$${s.price.toFixed(2)}</td>
+      <td class="mono ${s.chg >= 0 ? 'positive' : 'negative'}">${s.chg >= 0 ? '+' : ''}${s.chg.toFixed(2)} (${s.chgPct >= 0 ? '+' : ''}${s.chgPct.toFixed(2)}%)</td>
+      <td style="color:var(--text2)">${s.vol}</td>
+      <td><button class="btn btn-sm btn-buy" onclick="selectStock('${s.sym}')">View</button></td>
+    </tr>
+  `).join('');
+}
+
+function filterStocks(q) {
+  const filtered = stocks.filter(s => s.sym.includes(q.toUpperCase()) || s.name.toLowerCase().includes(q.toLowerCase()));
+  renderStocksTable(filtered);
+}
+
+function selectStock(sym) {
+  const s = stocks.find(x => x.sym === sym);
+  if (!s) return;
+  document.getElementById('m-symbol').value = sym;
+  document.getElementById('stock-detail-content').innerHTML = `
+    <div style="margin-bottom:1rem">
+      <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800">${s.sym}</div>
+      <div style="font-size:13px;color:var(--text2)">${s.name}</div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:500;margin-bottom:4px">$${s.price.toFixed(2)}</div>
+    <div class="mono ${s.chg >= 0 ? 'positive' : 'negative'}" style="margin-bottom:1rem">${s.chg >= 0 ? '▲' : '▼'} ${Math.abs(s.chg).toFixed(2)} (${Math.abs(s.chgPct).toFixed(2)}%) Today</div>
+    <hr class="divider">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+      <div><span style="color:var(--text2)">Volume:</span> <span class="mono">${s.vol}</span></div>
+      <div><span style="color:var(--text2)">Change:</span> <span class="mono ${s.chg >= 0 ? 'positive' : 'negative'}">${s.chg >= 0 ? '+' : ''}$${s.chg.toFixed(2)}</span></div>
+    </div>
+  `;
+}
+
+// ============ ORDER TYPE TOGGLES ============
+function setOrderType(type) {
+  currentOrderType.qt = type;
+  document.getElementById('qt-buy').className = `order-tab buy${type === 'buy' ? ' active' : ''}`;
+  document.getElementById('qt-sell').className = `order-tab sell${type === 'sell' ? ' active' : ''}`;
+  document.getElementById('qt-submit-btn').textContent = `Place ${type === 'buy' ? 'Buy' : 'Sell'} Order`;
+  document.getElementById('qt-submit-btn').className = `btn btn-full mt-2 ${type === 'buy' ? 'btn-buy' : 'btn-sell'}`;
+}
+
+function setMOrderType(type) {
+  currentOrderType.m = type;
+  document.getElementById('m-buy').className = `order-tab buy${type === 'buy' ? ' active' : ''}`;
+  document.getElementById('m-sell').className = `order-tab sell${type === 'sell' ? ' active' : ''}`;
+  document.getElementById('m-submit-btn').textContent = `Place ${type === 'buy' ? 'Buy' : 'Sell'} Order`;
+  document.getElementById('m-submit-btn').className = `btn btn-full mt-2 ${type === 'buy' ? 'btn-buy' : 'btn-sell'}`;
+}
+
+function setModalType(type) {
+  currentOrderType.modal = type;
+  document.getElementById('modal-buy-tab').className = `order-tab buy${type === 'buy' ? ' active' : ''}`;
+  document.getElementById('modal-sell-tab').className = `order-tab sell${type === 'sell' ? ' active' : ''}`;
+  document.getElementById('modal-submit-btn').textContent = `Place ${type === 'buy' ? 'Buy' : 'Sell'} Order`;
+}
+
+// ============ LIMIT PRICE TOGGLES ============
+document.getElementById && document.getElementById('qt-type') && document.getElementById('qt-type').addEventListener('change', function() {
+  document.getElementById('qt-price-wrap').style.display = this.value !== 'market' ? 'block' : 'none';
+});
+
+function toggleMLimit() {
+  const v = document.getElementById('m-order-type').value;
+  document.getElementById('m-limit-wrap').style.display = v !== 'market' ? 'block' : 'none';
+}
+
+function toggleModalLimit() {
+  const v = document.getElementById('modal-order-type').value;
+  document.getElementById('modal-limit-wrap').style.display = v !== 'market' ? 'block' : 'none';
+}
+
+// ============ SUBMIT ORDERS ============
+function submitOrder() {
+  const sym = document.getElementById('qt-symbol').value.trim();
+  const shares = document.getElementById('qt-shares').value;
+  if (!sym || !shares) { showToast('Please fill in all fields.', 'error'); return; }
+  const type = currentOrderType.qt;
+  const newOrder = {
+    id: `#ORD-${String(ordersData.length+1).padStart(3,'0')}`,
+    date: 'Today',
+    sym: sym.toUpperCase(),
+    type,
+    shares: parseInt(shares),
+    price: (stocks.find(s => s.sym === sym.toUpperCase())?.price || 100.00),
+    status: 'pending'
+  };
+  ordersData.unshift(newOrder);
+  renderOrdersTable(ordersData);
+  document.getElementById('qt-symbol').value = '';
+  document.getElementById('qt-shares').value = '';
+  showToast(`${type.toUpperCase()} order placed for ${shares} shares of ${sym.toUpperCase()}.`, 'success');
+}
+
+function submitMarketOrder() {
+  const sym = document.getElementById('m-symbol').value.trim();
+  const shares = document.getElementById('m-shares').value;
+  if (!sym || !shares) { showToast('Please fill all fields.', 'error'); return; }
+  const type = currentOrderType.m;
+  const newOrder = {
+    id: `#ORD-${String(ordersData.length+1).padStart(3,'0')}`,
+    date: 'Today',
+    sym: sym.toUpperCase(),
+    type,
+    shares: parseInt(shares),
+    price: (stocks.find(s => s.sym === sym.toUpperCase())?.price || 100.00),
+    status: 'pending'
+  };
+  ordersData.unshift(newOrder);
+  renderOrdersTable(ordersData);
+  showToast(`${type.toUpperCase()} order placed for ${shares} shares of ${sym.toUpperCase()}.`, 'success');
+}
+
+function submitModalOrder() {
+  const sym = document.getElementById('modal-symbol').value.trim();
+  const shares = document.getElementById('modal-shares').value;
+  if (!sym || !shares) { showToast('Please fill in all fields.', 'error'); return; }
+  const type = currentOrderType.modal;
+  const newOrder = {
+    id: `#ORD-${String(ordersData.length+1).padStart(3,'0')}`,
+    date: 'Today',
+    sym: sym.toUpperCase(),
+    type,
+    shares: parseInt(shares),
+    price: (stocks.find(s => s.sym === sym.toUpperCase())?.price || 100.00),
+    status: 'pending'
+  };
+  ordersData.unshift(newOrder);
+  renderOrdersTable(ordersData);
+  closeModal('order-modal');
+  showToast(`${type.toUpperCase()} order placed for ${shares} shares of ${sym.toUpperCase()}.`, 'success');
+}
+
+// ============ ORDERS TABLE ============
+function renderOrdersTable(data) {
+  const filtered = currentOrderFilter === 'all' ? data : data.filter(o => o.status === currentOrderFilter);
+  document.getElementById('orders-body').innerHTML = filtered.map(o => `
+    <tr>
+      <td class="mono text-sm" style="color:var(--text2)">${o.id}</td>
+      <td style="color:var(--text2);font-size:12px">${o.date}</td>
+      <td style="font-family:'Syne',sans-serif;font-weight:700">${o.sym}</td>
+      <td><span class="badge badge-${o.type}">${o.type.toUpperCase()}</span></td>
+      <td class="mono">${o.shares}</td>
+      <td class="mono">$${o.price.toFixed(2)}</td>
+      <td class="mono">$${(o.shares * o.price).toFixed(2)}</td>
+      <td><span class="badge badge-${o.status}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span></td>
+      <td>
+        ${o.status === 'pending' ? `<button class="btn btn-sm btn-danger" onclick="cancelOrder('${o.id}')">Cancel</button>` : ''}
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="9" style="padding:2rem;text-align:center;color:var(--text3)">No orders found.</td></tr>';
+}
+
+function filterOrders(filter) {
+  currentOrderFilter = filter;
+  document.querySelectorAll('[id^="filter-"]').forEach(b => { b.style.color=''; b.style.borderColor=''; });
+  const btn = document.getElementById(`filter-${filter}`);
+  if (btn) { btn.style.color='var(--accent)'; btn.style.borderColor='var(--accent)'; }
+  renderOrdersTable(ordersData);
+}
+
+function cancelOrder(id) {
+  const o = ordersData.find(x => x.id === id);
+  if (o) o.status = 'cancelled';
+  renderOrdersTable(ordersData);
+  showToast(`Order ${id} cancelled.`, 'error');
+}
+
+// ============ HOLDINGS ============
+function renderHoldings() {
+  const totalVal = holdings.reduce((s, h) => s + h.shares * h.current, 0);
+  document.getElementById('holdings-body').innerHTML = holdings.map(h => {
+    const mktVal = h.shares * h.current;
+    const pnl = (h.current - h.avgCost) * h.shares;
+    const pnlPct = ((h.current - h.avgCost) / h.avgCost * 100);
+    return `
+      <tr class="holding-row">
+        <td>${h.sym}</td>
+        <td style="color:var(--text2);font-size:12px">${h.name}</td>
+        <td class="mono">${h.shares}</td>
+        <td class="mono">$${h.avgCost.toFixed(2)}</td>
+        <td class="mono">$${h.current.toFixed(2)}</td>
+        <td class="mono">$${mktVal.toFixed(2)}</td>
+        <td class="mono ${pnl >= 0 ? 'positive' : 'negative'}">${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}</td>
+        <td class="mono ${pnlPct >= 0 ? 'positive' : 'negative'}">${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderAllocation() {
+  const totalVal = holdings.reduce((s, h) => s + h.shares * h.current, 0);
+  const colors = ['var(--accent)', 'var(--blue)', 'var(--red)', 'var(--amber)', '#a78bfa', '#f97316', '#ec4899'];
+  document.getElementById('allocation-list').innerHTML = holdings.map((h, i) => {
+    const pct = ((h.shares * h.current) / totalVal * 100).toFixed(1);
+    return `
+      <div style="margin-bottom:12px">
+        <div class="flex-between" style="margin-bottom:4px">
+          <span style="font-size:13px;font-weight:500">${h.sym}</span>
+          <span class="mono text-sm">${pct}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;background:${colors[i % colors.length]}"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============ SOCIAL ============
+function renderSocial() {
+  renderDiscoverList(investors);
+
+  document.getElementById('following-list').innerHTML = investors.filter(u => u.following).map(u => `
+    <div class="follower-card">
+      <div class="follower-avatar" style="background:${u.color}22;color:${u.color}">${u.init}</div>
+      <div class="follower-info">
+        <div class="follower-name">${u.name}</div>
+        <div class="follower-stats">@${u.user} · ${u.trades} trades · <span class="positive">${u.ret}</span></div>
+      </div>
+      <button class="btn btn-sm btn-danger" onclick="unfollowUser('${u.user}')">Unfollow</button>
+    </div>
+  `).join('');
+
+  document.getElementById('social-feed').innerHTML = feed.map(f => `
+    <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="width:32px;height:32px;border-radius:50%;background:${f.color}22;color:${f.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${f.init}</div>
+      <div>
+        <span style="font-weight:500;font-size:13px">${f.user}</span>
+        <span style="font-size:13px;color:var(--text2)"> ${f.action}</span>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${f.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDiscoverList(data) {
+  document.getElementById('discover-list').innerHTML = data.map(u => `
+    <div class="follower-card" id="inv-${u.user}">
+      <div class="follower-avatar" style="background:${u.color}22;color:${u.color}">${u.init}</div>
+      <div class="follower-info">
+        <div class="follower-name">${u.name}</div>
+        <div class="follower-stats">@${u.user} · ${u.trades} trades · <span class="positive">${u.ret}</span></div>
+      </div>
+      ${u.following
+        ? `<button class="btn btn-sm" style="color:var(--text2)" onclick="unfollowUser('${u.user}')">Following</button>`
+        : `<button class="btn btn-sm btn-buy" onclick="followUser('${u.user}')">+ Follow</button>`
+      }
+    </div>
+  `).join('');
+}
+
+function filterUsers(q) {
+  const filtered = investors.filter(u => u.name.toLowerCase().includes(q.toLowerCase()) || u.user.toLowerCase().includes(q.toLowerCase()));
+  renderDiscoverList(filtered);
+}
+
+function followUser(user) {
+  const inv = investors.find(u => u.user === user);
+  if (inv) { inv.following = true; renderSocial(); showToast(`Now following @${user}.`, 'success'); }
+}
+
+function unfollowUser(user) {
+  const inv = investors.find(u => u.user === user);
+  if (inv) { inv.following = false; renderSocial(); showToast(`Unfollowed @${user}.`, 'error'); }
+}
+
+// ============ ACCOUNT ============
+function handleDeposit() {
+  const amt = parseFloat(document.getElementById('deposit-amount').value);
+  if (!amt || amt <= 0) { showToast('Enter a valid amount.', 'error'); return; }
+  showToast(`$${amt.toFixed(2)} deposited successfully.`, 'success');
+  document.getElementById('deposit-amount').value = '';
+}
+
+function handleWithdraw() {
+  const amt = parseFloat(document.getElementById('deposit-amount').value);
+  if (!amt || amt <= 0) { showToast('Enter a valid amount.', 'error'); return; }
+  showToast(`Withdrawal of $${amt.toFixed(2)} submitted.`, 'success');
+  document.getElementById('deposit-amount').value = '';
+}
+
+// ============ REPORTS ============
+function runReport(type) {
+  const out = document.getElementById('report-output');
+  const title = document.getElementById('report-title');
+  const content = document.getElementById('report-content');
+  out.style.display = 'block';
+
+  if (type === 'portfolio') {
+    title.textContent = 'Portfolio Summary';
+    const totalVal = holdings.reduce((s, h) => s + h.shares * h.current, 0);
+    const totalCost = holdings.reduce((s, h) => s + h.shares * h.avgCost, 0);
+    const totalPnl = totalVal - totalCost;
+    content.innerHTML = `
+      <div class="grid-4 mb-2">
+        <div class="stat"><div class="stat-label">Total Value</div><div class="stat-value mono">$${totalVal.toFixed(2)}</div></div>
+        <div class="stat"><div class="stat-label">Cost Basis</div><div class="stat-value mono">$${totalCost.toFixed(2)}</div></div>
+        <div class="stat"><div class="stat-label">P&amp;L</div><div class="stat-value mono ${totalPnl >= 0 ? 'positive' : 'negative'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div></div>
+        <div class="stat"><div class="stat-label">Return</div><div class="stat-value mono positive">+${((totalPnl/totalCost)*100).toFixed(2)}%</div></div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Symbol</th><th>Shares</th><th>Market Value</th><th>P&L</th></tr></thead>
+        <tbody>
+          ${holdings.map(h => {
+            const mv = h.shares * h.current;
+            const pl = (h.current - h.avgCost) * h.shares;
+            return `<tr><td style="font-family:'Syne',sans-serif;font-weight:700">${h.sym}</td><td class="mono">${h.shares}</td><td class="mono">$${mv.toFixed(2)}</td><td class="mono ${pl >= 0 ? 'positive' : 'negative'}">${pl >= 0 ? '+' : ''}$${pl.toFixed(2)}</td></tr>`;
+          }).join('')}
+        </tbody></table>
+      </div>`;
+  } else if (type === 'transactions') {
+    title.textContent = 'Transaction History';
+    content.innerHTML = `
+      <div class="table-wrap">
+        <table><thead><tr><th>Order ID</th><th>Date</th><th>Symbol</th><th>Type</th><th>Shares</th><th>Price</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+          ${ordersData.filter(o => o.status === 'executed').map(o => `
+            <tr>
+              <td class="mono text-sm" style="color:var(--text2)">${o.id}</td>
+              <td style="font-size:12px;color:var(--text2)">${o.date}</td>
+              <td style="font-family:'Syne',sans-serif;font-weight:700">${o.sym}</td>
+              <td><span class="badge badge-${o.type}">${o.type.toUpperCase()}</span></td>
+              <td class="mono">${o.shares}</td>
+              <td class="mono">$${o.price.toFixed(2)}</td>
+              <td class="mono">$${(o.shares*o.price).toFixed(2)}</td>
+              <td><span class="badge badge-executed">Executed</span></td>
+            </tr>`).join('')}
+        </tbody></table>
+      </div>`;
+  } else if (type === 'mosttrades') {
+    title.textContent = 'Most-Traded Stocks';
+    const freq = {};
+    ordersData.forEach(o => { freq[o.sym] = (freq[o.sym] || 0) + 1; });
+    const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]);
+    content.innerHTML = `
+      <div class="table-wrap">
+        <table><thead><tr><th>Rank</th><th>Symbol</th><th>Orders</th><th>Activity</th></tr></thead>
+        <tbody>
+          ${sorted.map(([sym, cnt], i) => `
+            <tr>
+              <td class="mono" style="color:var(--text3)">#${i+1}</td>
+              <td style="font-family:'Syne',sans-serif;font-weight:700">${sym}</td>
+              <td class="mono">${cnt}</td>
+              <td>
+                <div class="progress-bar" style="width:120px">
+                  <div class="progress-fill" style="width:${Math.round((cnt/sorted[0][1])*100)}%;background:var(--accent)"></div>
+                </div>
+              </td>
+            </tr>`).join('')}
+        </tbody></table>
+      </div>`;
+  }
+}
+
+// ============ MODAL ============
+function openOrderModal() {
+  document.getElementById('order-modal').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.getElementById('order-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('order-modal');
+});
+
+// ============ TOAST ============
+let toastTimeout;
+function showToast(msg, type = 'success') {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  clearTimeout(toastTimeout);
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<div class="toast-dot"></div><span>${msg}</span>`;
+  document.body.appendChild(t);
+  toastTimeout = setTimeout(() => t.remove(), 3500);
+}
+
+// ============ QT ORDER TYPE LISTENER ============
+document.getElementById('qt-type').addEventListener('change', function() {
+  document.getElementById('qt-price-wrap').style.display = this.value !== 'market' ? 'block' : 'none';
+});
+</script>
+</body>
+</html>
