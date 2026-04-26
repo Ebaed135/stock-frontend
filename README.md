@@ -23,10 +23,6 @@ git clone https://github.com/Ebaed135/stock-frontend.git
 - Click **Open with Live Server**
 - The app will open in your browser at `localhost:5500`
 
-## Notes
-- No npm, no installs, no build steps — it's a single HTML file
-- The app runs entirely in the browser with mock data for now
-- When the database backend is ready, the hardcoded data arrays near the bottom of the `<script>` tag in `stock_frontend.html` will be replaced with real API calls
 
 ## Project
 COP 4407 — Database Systems  
